@@ -161,28 +161,20 @@ class MineField(private val size: Int, private val numMines: Int) {
     }
 
     fun isGameOver(): Boolean {
-
         if (isExploded) {
             return true
         }
 
-        var flagCount = 0
-        var minesMarked = 0
-        var row: Array<Cell>
+        var clickedCount = 0
 
-        for (i in mineField.indices) {
-            row = mineField[i]
-            for (j in row.indices) {
-                if (flags[i][j]) {
-                    flagCount++
-
-                    if (row[j].isMine()) {
-                        minesMarked++
-                    }
+        mineField.forEach {row ->
+            row.forEach { cell ->
+                if (cell.isClicked) {
+                    clickedCount++
                 }
             }
         }
 
-        return (minesMarked == numMines && flagCount == numMines)
+        return (clickedCount + numMines) == (size*size)
     }
 }
