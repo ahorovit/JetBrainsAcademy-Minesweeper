@@ -3,7 +3,8 @@ package minesweeper
 import kotlin.random.Random
 
 class MineField(val size: Int, val numMines: Int) {
-    val field: Array<CharArray> = generateMinefield()
+    val mineField: Array<CharArray> = generateMinefield()
+    val flags = Array(size) { BooleanArray(size) { false } }
 
     private fun generateMinefield(): Array<CharArray> {
         val result = Array(size) { CharArray(size) }
@@ -89,4 +90,65 @@ class MineField(val size: Int, val numMines: Int) {
         }
     }
 
+    fun print() {
+        var printRow: String
+
+        // print header
+        println(" │123456789│")
+        println("—│—————————│")
+
+        for (i in mineField.indices) {
+            printRow = mineField[i].joinToString(separator = "").replace('X', '.')
+
+            // print left margin
+            print("${i + 1}|")
+
+            for (j in printRow.indices) {
+                if (flags[i][j])
+                    print('*')
+                else
+                    print(printRow[j])
+            }
+
+            // print right margin
+            println("|")
+        }
+
+        // print footer
+        println("—│—————————│")
+    }
+
+    fun isSolved(): Boolean {
+        var flagCount = 0
+        var minesMarked = 0
+        var row: CharArray
+
+        for (i in mineField.indices) {
+            row = mineField[i]
+            for (j in row.indices) {
+                if (flags[i][j]) {
+                    flagCount++
+
+                    if (row[j] == 'X') {
+                        minesMarked++
+                    }
+                }
+            }
+        }
+
+        return (minesMarked == numMines && flagCount == numMines)
+    }
+
+    fun toggleFlag(inputX: Int, inputY: Int): Boolean {
+        var isSuccessful = true;
+
+        if (mineField[inputY][inputX] == '.' || mineField[inputY][inputX] == 'X') {
+            flags[inputY][inputX] = !flags[inputY][inputX]
+        } else {
+            println("There is a number here!")
+            isSuccessful = false
+        }
+
+        return isSuccessful
+    }
 }
