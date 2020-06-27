@@ -6,6 +6,7 @@ class MineField(private val size: Int, private val numMines: Int) {
     private var mineField: Array<Array<Cell>> = arrayOf(arrayOf(Cell('?')))
     private val flags: Array<BooleanArray> = Array(size) { BooleanArray(size) { false } }
     private var isFinalized = false
+    var isExploded = false
 
     init {
         generateMinefield()
@@ -87,22 +88,24 @@ class MineField(private val size: Int, private val numMines: Int) {
         println("—│—————————│")
     }
 
-    // place flag
-    fun toggleFlag(inputX: Int, inputY: Int): Boolean {
+    fun clickCell(inputX: Int, inputY: Int): Boolean {
+        // First click is guaranteed to be empty cell
         if (!isFinalized) {
             finalize(inputY, inputX)
         }
 
-        var isSuccessful = true
+        val clickedCell = mineField[inputY][inputX]
 
-        if (mineField[inputY][inputX].getDisplayChar() == '.' || mineField[inputY][inputX].getDisplayChar() == 'X') {
-            flags[inputY][inputX] = !flags[inputY][inputX]
+        return if (clickedCell.isClicked) {
+            println("Cell is already explored")
+            false
         } else {
-            println("There is a number here!")
-            isSuccessful = false
+            clickedCell.isClicked = true
+            if (clickedCell.isMine()) {
+                isExploded = true
+            }
+            true
         }
-
-        return isSuccessful
     }
 
     // First 'click' on field cannot be a Mine
@@ -120,6 +123,19 @@ class MineField(private val size: Int, private val numMines: Int) {
         }
 
         isFinalized = true
+    }
+
+    // place/remove flag
+    fun toggleFlag(inputX: Int, inputY: Int): Boolean {
+        val cell = mineField[inputY][inputX]
+
+        return if(cell.isClicked) {
+            println("Cannot mark explored cell!")
+            false
+        } else {
+            flags[inputY][inputX] = !flags[inputY][inputX]
+            true
+        }
     }
 
     // Get (up to) 8 neighboring cells for a given cell at (i,j)
@@ -143,7 +159,12 @@ class MineField(private val size: Int, private val numMines: Int) {
         return result
     }
 
-    fun isSolved(): Boolean {
+    fun isGameOver(): Boolean {
+
+        if (isExploded) {
+            return true
+        }
+
         var flagCount = 0
         var minesMarked = 0
         var row: Array<Cell>
@@ -163,5 +184,4 @@ class MineField(private val size: Int, private val numMines: Int) {
 
         return (minesMarked == numMines && flagCount == numMines)
     }
-
 }

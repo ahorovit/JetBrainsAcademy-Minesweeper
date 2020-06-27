@@ -1,8 +1,7 @@
 package minesweeper
 
 class Cell(val cellValue: Char) {
-//    var isClicked = false
-    var isClicked = true // @todo restore
+    var isClicked = false
     var isFlagged = false
     var neighboringMines = 0
     var neighbors: MutableList<Cell> = mutableListOf()

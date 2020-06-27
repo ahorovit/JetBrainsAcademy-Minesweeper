@@ -1,5 +1,6 @@
 package minesweeper
 
+import java.lang.Exception
 import java.util.*
 import kotlin.random.Random
 
@@ -14,25 +15,37 @@ fun main() {
 
     do {
         mineField.print()
-        getFlagCoordinates(mineField)
-    } while (!mineField.isSolved())
+        getNextCommand(mineField)
+    } while (!mineField.isGameOver())
 
-    println("Congratulations! You found all the mines!")
+    mineField.print()
+
+    if (mineField.isExploded) {
+        println("You stepped on a mine and failed!")
+    } else {
+        println("Congratulations! You found all the mines!")
+    }
 }
 
-fun getFlagCoordinates(mineField: MineField) {
+fun getNextCommand(mineField: MineField) {
     val scanner = Scanner(System.`in`)
 
     do {
-
         // @todo: restore
-//        print("Set/delete min marks (x and y coordinates):")
+//        print("Set/unset mine marks or claim a cell as free:")
 //        var inputX = scanner.nextInt() - 1
 //        var inputY = scanner.nextInt() - 1
+//        var command = scanner.next()
+
         var inputX = Random.nextInt(9)
         var inputY = Random.nextInt(9)
-        println("Set/delete min marks (x and y coordinates): $inputX $inputY")
+        var command = "free"
+        println("Set/unset mine marks or claim a cell as free: $inputX $inputY $command")
 
-        var isValid = mineField.toggleFlag(inputX, inputY)
+        var isValid = when (command) {
+            "free" -> mineField.clickCell(inputX, inputY)
+            "mine" -> mineField.toggleFlag(inputX, inputY)
+            else -> throw Exception("Invalid command")
+        }
     } while (!isValid)
 }
