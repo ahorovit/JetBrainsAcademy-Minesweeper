@@ -100,7 +100,7 @@ class MineField(private val size: Int, private val numMines: Int) {
             println("Cell is already explored")
             false
         } else {
-            clickedCell.isClicked = true
+            clickedCell.click()
             if (clickedCell.isMine()) {
                 isExploded = true
             }
@@ -119,6 +119,7 @@ class MineField(private val size: Int, private val numMines: Int) {
         for (i in 0 until size) {
             for (j in 0 until size) {
                 mineField[i][j].neighbors = getNeighbors(i, j)
+                mineField[i][j].setCoordinates(j+1, i+1)
             }
         }
 

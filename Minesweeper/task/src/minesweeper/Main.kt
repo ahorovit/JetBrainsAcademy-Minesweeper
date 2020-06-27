@@ -33,18 +33,18 @@ fun getNextCommand(mineField: MineField) {
     do {
         // @todo: restore
 //        print("Set/unset mine marks or claim a cell as free:")
-//        var inputX = scanner.nextInt() - 1
-//        var inputY = scanner.nextInt() - 1
+//        var inputX = scanner.nextInt()
+//        var inputY = scanner.nextInt()
 //        var command = scanner.next()
 
-        var inputX = Random.nextInt(9)
-        var inputY = Random.nextInt(9)
+        var inputX = Random.nextInt(8) + 1
+        var inputY = Random.nextInt(8) + 1
         var command = "free"
         println("Set/unset mine marks or claim a cell as free: $inputX $inputY $command")
 
         var isValid = when (command) {
-            "free" -> mineField.clickCell(inputX, inputY)
-            "mine" -> mineField.toggleFlag(inputX, inputY)
+            "free" -> mineField.clickCell(inputX - 1, inputY - 1)
+            "mine" -> mineField.toggleFlag(inputX - 1, inputY - 1)
             else -> throw Exception("Invalid command")
         }
     } while (!isValid)
