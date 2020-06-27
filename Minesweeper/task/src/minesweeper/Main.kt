@@ -28,6 +28,6 @@ fun getFlagCoordinates(mineField: MineField) {
         inputX = scanner.nextInt() - 1
         inputY = scanner.nextInt() - 1
 
-        isValid = mineField.toggleFlag(inputX, inputY);
+        isValid = mineField.toggleFlag(inputX, inputY)
     } while (!isValid)
 }

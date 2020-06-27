@@ -2,9 +2,9 @@ package minesweeper
 
 import kotlin.random.Random
 
-class MineField(val size: Int, val numMines: Int) {
-    val mineField: Array<CharArray> = generateMinefield()
-    val flags = Array(size) { BooleanArray(size) { false } }
+class MineField(private val size: Int, private val numMines: Int) {
+    private val mineField: Array<CharArray> = generateMinefield()
+    private val flags = Array(size) { BooleanArray(size) { false } }
 
     private fun generateMinefield(): Array<CharArray> {
         val result = Array(size) { CharArray(size) }
@@ -140,7 +140,7 @@ class MineField(val size: Int, val numMines: Int) {
     }
 
     fun toggleFlag(inputX: Int, inputY: Int): Boolean {
-        var isSuccessful = true;
+        var isSuccessful = true
 
         if (mineField[inputY][inputX] == '.' || mineField[inputY][inputX] == 'X') {
             flags[inputY][inputX] = !flags[inputY][inputX]
