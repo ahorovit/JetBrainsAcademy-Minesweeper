@@ -4,7 +4,6 @@ import kotlin.random.Random
 
 class MineField(private val size: Int, private val numMines: Int) {
     private var mineField: Array<Array<Cell>> = arrayOf(arrayOf(Cell('?')))
-    private val flags: Array<BooleanArray> = Array(size) { BooleanArray(size) { false } }
     private var isFinalized = false
     var isExploded = false
 
@@ -64,9 +63,15 @@ class MineField(private val size: Int, private val numMines: Int) {
                 continue
             }
 
-            val temp = mineField[iTarget][jTarget]
+            val tempCell = mineField[iTarget][jTarget]
             mineField[iTarget][jTarget] = mineField[i][j]
-            mineField[i][j] = temp
+            mineField[i][j] = tempCell
+
+            // In case one cell was flagged, we must restore the coordinates of the flag
+            val tempIsFlagged = mineField[iTarget][jTarget].isFlagged
+            mineField[iTarget][jTarget].isFlagged = mineField[i][j].isFlagged
+            mineField[i][j].isFlagged = tempIsFlagged
+
             return
         }
     }
@@ -134,7 +139,7 @@ class MineField(private val size: Int, private val numMines: Int) {
             println("Cannot mark explored cell!")
             false
         } else {
-            flags[inputY][inputX] = !flags[inputY][inputX]
+            cell.isFlagged = !cell.isFlagged
             true
         }
     }

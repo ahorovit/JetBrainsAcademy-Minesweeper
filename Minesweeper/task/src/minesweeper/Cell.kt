@@ -1,17 +1,19 @@
 package minesweeper
 
-class Cell(val cellValue: Char) {
+class Cell(private val cellValue: Char) {
     var isClicked = false
     var isFlagged = false
-    var xCoord: Int = -1
-    var yCoord: Int = -1
-    var neighboringMines = 0
+    private var xCoord: Int = -1
+    private var yCoord: Int = -1
+    private var neighboringMines = 0
     var neighbors: MutableList<Cell> = mutableListOf()
         set(neighbors) {
             field = neighbors
 
-            neighbors.forEach {
-                neighbor -> if(neighbor.isMine()) neighboringMines++
+            neighbors.forEach { neighbor ->
+                if (neighbor.isMine()) {
+                    neighboringMines++
+                }
             }
         }
 
@@ -25,21 +27,25 @@ class Cell(val cellValue: Char) {
     }
 
     fun getDisplayChar(): Char {
-        return if (isClicked) {
-            when (isMine()) {
-                true -> cellValue
-                else -> {
-                    if (neighboringMines > 0) {
-                        "$neighboringMines"[0] // Convert decimal (1-8) to char (not ASCII)
-                    } else {
-                        '/'
+        return when {
+            isClicked -> {
+                when (isMine()) {
+                    true -> cellValue
+                    else -> {
+                        if (neighboringMines > 0) {
+                            "$neighboringMines"[0] // Convert decimal (1-8) to char (not ASCII)
+                        } else {
+                            '/'
+                        }
                     }
                 }
             }
-        } else if (isFlagged) {
-            '*'
-        } else {
-            '.'
+            isFlagged -> {
+                '*'
+            }
+            else -> {
+                '.'
+            }
         }
     }
 
@@ -73,7 +79,7 @@ class Cell(val cellValue: Char) {
             }
         }
 
-        while (!cellsToClick.isEmpty()) {
+        while (cellsToClick.isNotEmpty()) {
             cellsToClick.removeAt(0).click()
         }
     }
