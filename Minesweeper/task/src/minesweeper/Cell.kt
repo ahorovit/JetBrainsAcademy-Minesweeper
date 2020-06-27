@@ -1,24 +1,39 @@
 package minesweeper
 
-enum class Cell(val cellValue: Char) {
-    MINE('X'),
-    EMPTY('.'),
-    NULL('?');
+class Cell(val cellValue: Char) {
+//    var isClicked = false
+    var isClicked = true // @todo restore
+    var isFlagged = false
+    var neighboringMines = 0
+    var neighbors: MutableList<Cell> = mutableListOf()
+        set(neighbors) {
+            field = neighbors
 
-    val neighbors: MutableList<Cell> = mutableListOf()
-    var displayChar: Char = cellValue
+            neighbors.forEach {
+                neighbor -> if(neighbor.isMine()) neighboringMines++
+            }
+        }
+
+    fun getDisplayChar(): Char {
+        return if (isClicked) {
+            when (isMine()) {
+                true -> cellValue
+                else -> {
+                    if (neighboringMines > 0) {
+                        "$neighboringMines"[0] // Convert decimal (1-8) to char (not ASCII)
+                    } else {
+                        '/'
+                    }
+                }
+            }
+        } else if (isFlagged) {
+            '*'
+        } else {
+            '.'
+        }
+    }
 
     fun isMine(): Boolean {
         return cellValue == 'X'
     }
-
-
-    fun addNeighbor(neighbor: Cell) {
-        neighbors.add(neighbor)
-
-//        if (this.cellValue != 'X')
-    }
-
-
-
 }

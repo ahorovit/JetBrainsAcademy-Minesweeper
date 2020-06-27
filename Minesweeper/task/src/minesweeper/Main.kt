@@ -1,13 +1,15 @@
 package minesweeper
 
 import java.util.*
+import kotlin.random.Random
 
 fun main() {
     val scanner = Scanner(System.`in`)
 //    print("How many mines do you want on the field?")
+    println("How many mines do you want on the field? > 10") // @todo remove
     val fieldSize = 9
 //    val numMines = scanner.nextInt()
-    val numMines = 10
+    val numMines = 10 // @todo remove
     val mineField = MineField(fieldSize, numMines)
 
     do {
@@ -20,15 +22,17 @@ fun main() {
 
 fun getFlagCoordinates(mineField: MineField) {
     val scanner = Scanner(System.`in`)
-    var inputX: Int
-    var inputY: Int
-    var isValid: Boolean
 
     do {
-        print("Set/delete min marks (x and y coordinates):")
-        inputX = scanner.nextInt() - 1
-        inputY = scanner.nextInt() - 1
 
-        isValid = mineField.toggleFlag(inputX, inputY)
+        // @todo: restore
+//        print("Set/delete min marks (x and y coordinates):")
+//        var inputX = scanner.nextInt() - 1
+//        var inputY = scanner.nextInt() - 1
+        var inputX = Random.nextInt(9)
+        var inputY = Random.nextInt(9)
+        println("Set/delete min marks (x and y coordinates): $inputX $inputY")
+
+        var isValid = mineField.toggleFlag(inputX, inputY)
     } while (!isValid)
 }

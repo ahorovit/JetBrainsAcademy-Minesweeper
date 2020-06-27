@@ -2,42 +2,39 @@ package minesweeper
 
 import kotlin.random.Random
 
-class MineField {
-    private val size: Int
-    private val numMines: Int
-    private var mineField: Array<Array<Cell>> = arrayOf(arrayOf(Cell.NULL))
-    private val flags: Array<BooleanArray>
+class MineField(private val size: Int, private val numMines: Int) {
+    private var mineField: Array<Array<Cell>> = arrayOf(arrayOf(Cell('?')))
+    private val flags: Array<BooleanArray> = Array(size) { BooleanArray(size) { false } }
+    private var isFinalized = false
 
-    constructor(size: Int, numMines: Int) {
-        this.size = size
-        this.numMines = numMines
-        flags = Array(size) { BooleanArray(size) { false } }
+    init {
         generateMinefield()
     }
 
     private fun generateMinefield() {
         var minesPlaced = 0
 
+        // Guarantee specific number of mines in field
         mineField = Array(size) {
             Array(size) {
                 if (minesPlaced++ < numMines) {
-                    Cell.MINE
+                    Cell('X')
                 } else {
-                    Cell.EMPTY
+                    Cell('.')
                 }
             }
         }
 
         shuffleField()
-//        lookAround()
     }
 
+    // Randomize mines in field
     private fun shuffleField() {
         var swaps = 0
 
         loop@ for (i in 0 until size) {
             for (j in 0 until size) {
-                swapCell(i, j)
+                swapMinePosition(i, j)
                 swaps++
 
                 if (swaps >= numMines) {
@@ -47,10 +44,12 @@ class MineField {
         }
     }
 
-    private fun swapCell(i: Int, j: Int) {
+    // Find random cell to swap with mine at (i,j)
+    private fun swapMinePosition(i: Int, j: Int) {
         var attempts = 0
 
         while (true) {
+            // Avoid infinite loop
             attempts++
             if (attempts > 100) {
                 throw Exception("too many swap attempts")
@@ -59,6 +58,7 @@ class MineField {
             val iTarget = Random.nextInt(size)
             val jTarget = Random.nextInt(size)
 
+            // Must swap with empty cell
             if (mineField[iTarget][jTarget].isMine()) {
                 continue
             }
@@ -70,66 +70,77 @@ class MineField {
         }
     }
 
-//    private fun lookAround() {
-//        var mineCount: Int
-//
-//        for (i in 0 until size) {
-//            for (j in 0 until size) {
-//                if (mineField[i][j] == 'X') {
-//                    continue
-//                }
-//
-//                mineCount = 0
-//
-//                for (ii in (i - 1)..(i + 1)) {
-//                    if (ii < 0 || ii >= size) {
-//                        continue
-//                    }
-//
-//                    for (jj in (j - 1)..(j + 1)) {
-//                        if (jj < 0 || jj >= size) {
-//                            continue
-//                        }
-//
-//                        if (mineField[ii][jj] == 'X') {
-//                            mineCount++
-//                        }
-//                    }
-//                }
-//
-//                if (mineCount > 0) {
-//                    mineField[i][j] = mineCount.toString()[0]
-//                }
-//            }
-//        }
-//    }
-
     fun print() {
-        var printRow: String
-
         // print header
         println(" │123456789│")
         println("—│—————————│")
 
         for (i in mineField.indices) {
-            printRow = mineField[i].joinToString(separator = "").replace('X', '.')
-
-            // print left margin
-            print("${i + 1}|")
-
-            for (j in printRow.indices) {
-                if (flags[i][j])
-                    print('*')
-                else
-                    print(printRow[j])
+            var printRow = ""
+            mineField[i].forEach { cell ->
+                printRow += cell.getDisplayChar()
             }
 
-            // print right margin
-            println("|")
+            println("${i + 1}|$printRow|")
         }
-
         // print footer
         println("—│—————————│")
+    }
+
+    // place flag
+    fun toggleFlag(inputX: Int, inputY: Int): Boolean {
+        if (!isFinalized) {
+            finalize(inputY, inputX)
+        }
+
+        var isSuccessful = true
+
+        if (mineField[inputY][inputX].getDisplayChar() == '.' || mineField[inputY][inputX].getDisplayChar() == 'X') {
+            flags[inputY][inputX] = !flags[inputY][inputX]
+        } else {
+            println("There is a number here!")
+            isSuccessful = false
+        }
+
+        return isSuccessful
+    }
+
+    // First 'click' on field cannot be a Mine
+    // --> upon first click, move mine if necessary, and set neighbors for all cells
+    private fun finalize(yIndex: Int, xIndex: Int) {
+        if (mineField[yIndex][xIndex].isMine()) {
+            swapMinePosition(yIndex, xIndex)
+        }
+
+        // Pass neighbors to each cell
+        for (i in 0 until size) {
+            for (j in 0 until size) {
+                mineField[i][j].neighbors = getNeighbors(i, j)
+            }
+        }
+
+        isFinalized = true
+    }
+
+    // Get (up to) 8 neighboring cells for a given cell at (i,j)
+    private fun getNeighbors(i: Int, j: Int): MutableList<Cell> {
+        val result = mutableListOf<Cell>()
+
+        for (ii in (i - 1)..(i + 1)) {
+            if (ii < 0 || ii >= size) {
+                continue
+            }
+
+            for (jj in (j - 1)..(j + 1)) {
+                if (jj < 0 || jj >= size || (ii == i && jj == j)) {
+                    continue
+                }
+
+                result.add(mineField[ii][jj])
+            }
+        }
+
+        return result
     }
 
     fun isSolved(): Boolean {
@@ -153,16 +164,4 @@ class MineField {
         return (minesMarked == numMines && flagCount == numMines)
     }
 
-    fun toggleFlag(inputX: Int, inputY: Int): Boolean {
-        var isSuccessful = true
-
-        if (mineField[inputY][inputX].displayChar == '.' || mineField[inputY][inputX].displayChar == 'X') {
-            flags[inputY][inputX] = !flags[inputY][inputX]
-        } else {
-            println("There is a number here!")
-            isSuccessful = false
-        }
-
-        return isSuccessful
-    }
 }
