@@ -2,93 +2,107 @@ package minesweeper
 
 import kotlin.random.Random
 
-class MineField(private val size: Int, private val numMines: Int) {
-    private val mineField: Array<CharArray> = generateMinefield()
-    private val flags = Array(size) { BooleanArray(size) { false } }
+class MineField {
+    private val size: Int
+    private val numMines: Int
+    private var mineField: Array<Array<Cell>> = arrayOf(arrayOf(Cell.NULL))
+    private val flags: Array<BooleanArray>
 
-    private fun generateMinefield(): Array<CharArray> {
-        val result = Array(size) { CharArray(size) }
+    constructor(size: Int, numMines: Int) {
+        this.size = size
+        this.numMines = numMines
+        flags = Array(size) { BooleanArray(size) { false } }
+        generateMinefield()
+    }
+
+    private fun generateMinefield() {
         var minesPlaced = 0
-        var cell: Char
 
-        for (i in 0 until size) {
-            for (j in 0 until size) {
-
-                if (minesPlaced < numMines) {
-                    cell = 'X'
-                    minesPlaced++
+        mineField = Array(size) {
+            Array(size) {
+                if (minesPlaced++ < numMines) {
+                    Cell.MINE
                 } else {
-                    cell = '.'
+                    Cell.EMPTY
                 }
-
-                result[i][j] = cell
             }
         }
 
-        shuffleArray(result)
-        lookAround(result)
-
-        return result
+        shuffleField()
+//        lookAround()
     }
 
-    private fun shuffleArray(mineField: Array<CharArray>) {
-        var i1: Int
-        var j1: Int
-        var i2: Int
-        var j2: Int
-        var temp: Char
+    private fun shuffleField() {
         var swaps = 0
 
-        do {
-            i1 = Random.nextInt(size)
-            j1 = Random.nextInt(size)
-            i2 = Random.nextInt(size)
-            j2 = Random.nextInt(size)
+        loop@ for (i in 0 until size) {
+            for (j in 0 until size) {
+                swapCell(i, j)
+                swaps++
 
-            if (mineField[i1][j1] == mineField[i2][j2]) {
+                if (swaps >= numMines) {
+                    break@loop
+                }
+            }
+        }
+    }
+
+    private fun swapCell(i: Int, j: Int) {
+        var attempts = 0
+
+        while (true) {
+            attempts++
+            if (attempts > 100) {
+                throw Exception("too many swap attempts")
+            }
+
+            val iTarget = Random.nextInt(size)
+            val jTarget = Random.nextInt(size)
+
+            if (mineField[iTarget][jTarget].isMine()) {
                 continue
             }
 
-            temp = mineField[i1][j1]
-            mineField[i1][j1] = mineField[i2][j2]
-            mineField[i2][j2] = temp
-            swaps++
-        } while (swaps < 20)
-    }
-
-    private fun lookAround(mineField: Array<CharArray>) {
-        var mineCount: Int
-
-        for (i in 0 until size) {
-            for (j in 0 until size) {
-                if (mineField[i][j] == 'X') {
-                    continue
-                }
-
-                mineCount = 0
-
-                for (ii in (i - 1)..(i + 1)) {
-                    if (ii < 0 || ii >= size) {
-                        continue
-                    }
-
-                    for (jj in (j - 1)..(j + 1)) {
-                        if (jj < 0 || jj >= size) {
-                            continue
-                        }
-
-                        if (mineField[ii][jj] == 'X') {
-                            mineCount++
-                        }
-                    }
-                }
-
-                if (mineCount > 0) {
-                    mineField[i][j] = mineCount.toString()[0]
-                }
-            }
+            val temp = mineField[iTarget][jTarget]
+            mineField[iTarget][jTarget] = mineField[i][j]
+            mineField[i][j] = temp
+            return
         }
     }
+
+//    private fun lookAround() {
+//        var mineCount: Int
+//
+//        for (i in 0 until size) {
+//            for (j in 0 until size) {
+//                if (mineField[i][j] == 'X') {
+//                    continue
+//                }
+//
+//                mineCount = 0
+//
+//                for (ii in (i - 1)..(i + 1)) {
+//                    if (ii < 0 || ii >= size) {
+//                        continue
+//                    }
+//
+//                    for (jj in (j - 1)..(j + 1)) {
+//                        if (jj < 0 || jj >= size) {
+//                            continue
+//                        }
+//
+//                        if (mineField[ii][jj] == 'X') {
+//                            mineCount++
+//                        }
+//                    }
+//                }
+//
+//                if (mineCount > 0) {
+//                    mineField[i][j] = mineCount.toString()[0]
+//                }
+//            }
+//        }
+//    }
 
     fun print() {
         var printRow: String
@@ -121,7 +135,7 @@ class MineField(private val size: Int, private val numMines: Int) {
     fun isSolved(): Boolean {
         var flagCount = 0
         var minesMarked = 0
-        var row: CharArray
+        var row: Array<Cell>
 
         for (i in mineField.indices) {
             row = mineField[i]
@@ -129,7 +143,7 @@ class MineField(private val size: Int, private val numMines: Int) {
                 if (flags[i][j]) {
                     flagCount++
 
-                    if (row[j] == 'X') {
+                    if (row[j].isMine()) {
                         minesMarked++
                     }
                 }
@@ -142,7 +156,7 @@ class MineField(private val size: Int, private val numMines: Int) {
     fun toggleFlag(inputX: Int, inputY: Int): Boolean {
         var isSuccessful = true
 
-        if (mineField[inputY][inputX] == '.' || mineField[inputY][inputX] == 'X') {
+        if (mineField[inputY][inputX].displayChar == '.' || mineField[inputY][inputX].displayChar == 'X') {
             flags[inputY][inputX] = !flags[inputY][inputX]
         } else {
             println("There is a number here!")

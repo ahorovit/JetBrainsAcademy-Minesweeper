@@ -4,9 +4,10 @@ import java.util.*
 
 fun main() {
     val scanner = Scanner(System.`in`)
-    print("How many mines do you want on the field?")
+//    print("How many mines do you want on the field?")
     val fieldSize = 9
-    val numMines = scanner.nextInt()
+//    val numMines = scanner.nextInt()
+    val numMines = 10
     val mineField = MineField(fieldSize, numMines)
 
     do {

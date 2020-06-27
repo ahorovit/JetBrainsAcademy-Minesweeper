@@ -471,6 +471,9 @@ files:
 - name: src/minesweeper/MineField.kt
   visible: true
   learner_created: true
+- name: src/minesweeper/Cell.kt
+  visible: true
+  learner_created: true
 feedback_link: https://hyperskill.org/projects/8/stages/469/implement
 status: Failed
 feedback:
